@@ -1,22 +1,20 @@
 #!/usr/bin/env python
+# https://adventofcode.com/2020/day/2
 
 import re
 
 
 def get_input():
-    with open("inputs/day2.txt") as reader:
-        return reader.readlines()
+    return (re.split("-| |: ", line) for line in open("inputs/day2.txt"))
 
 
 def part1(min, max, letter, password):
-    occurrences = password.count(letter)
-    return occurrences >= int(min) and occurrences <= int(max)
+    return int(min) <= password.count(letter) <= int(max)
 
 
 def part2(pos1, pos2, letter, password):
     return [password[int(pos1)-1], password[int(pos2)-1]].count(letter) == 1
 
 
-input = [re.split("-| |: ", line) for line in get_input()]
-print([part1(*data) for data in input].count(True))
-print([part2(*data) for data in input].count(True))
+print([part1(*data) for data in get_input()].count(True))
+print([part2(*data) for data in get_input()].count(True))

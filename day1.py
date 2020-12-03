@@ -1,9 +1,9 @@
 #!/usr/bin/env python
+# https://adventofcode.com/2020/day/1
 
 
 def get_input():
-    with open("inputs/day1.txt") as reader:
-        return [int(i) for i in reader.readlines()]
+    return [int(line) for line in open("inputs/day1.txt")]
 
 
 def part1(numbers):
@@ -21,6 +21,5 @@ def part2(numbers):
                     return n1*n2*n3
 
 
-input = get_input()
-print(part1(input))
-print(part2(input))
+print(part1(get_input()))
+print(part2(get_input()))
