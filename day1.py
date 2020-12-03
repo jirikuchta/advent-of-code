@@ -21,7 +21,6 @@ def part2(numbers):
                     return n1*n2*n3
 
 
-if __name__ == "__main__":
-    input = get_input()
-    print(part1(input))
-    print(part2(input))
+input = get_input()
+print(part1(input))
+print(part2(input))
