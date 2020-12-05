@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# https://adventofcode.com/2020/day/3
+# https://adventofcode.com/2020/day/4
 
 import re
 from functools import reduce
@@ -39,10 +39,10 @@ def part2_validation(passport):
         except Exception:
             return False
 
-        if unit == "cm" and (height < 150 or height > 193):
+        if unit == "cm" and not 150 <= height <= 193:
             return False
 
-        if unit == "in" and (height < 59 or height > 76):
+        if unit == "in" and not 59 <= height <= 76:
             return False
 
         return True
