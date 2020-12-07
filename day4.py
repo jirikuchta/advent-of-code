@@ -47,37 +47,21 @@ def part2_validation(passport):
 
         return True
 
-    if not part1_validation(passport):
-        return False
-
-    if not validate_year(passport["byr"], 1920, 2002):
-        return False
-
-    if not validate_year(passport["iyr"], 2010, 2020):
-        return False
-
-    if not validate_year(passport["eyr"], 2020, 2030):
-        return False
-
-    if not validate_hgt(passport["hgt"]):
-        return False
-
-    if not re.match("^#[0-9a-f]{6}$", passport["hcl"]):
-        return False
-
-    if passport["ecl"] not in ("amb", "blu", "brn", "gry", "grn", "hzl", "oth"):
-        return False
-
-    if not re.match("^\\d{9}$", passport["pid"]):
-        return False
-
-    return True
+    return (
+        part1_validation(passport) and
+        validate_year(passport["byr"], 1920, 2002) and
+        validate_year(passport["iyr"], 2010, 2020) and
+        validate_year(passport["eyr"], 2020, 2030) and
+        validate_hgt(passport["hgt"]) and
+        re.match("^#[0-9a-f]{6}$", passport["hcl"]) and
+        re.match("^\\d{9}$", passport["pid"]) and
+        passport["ecl"] in ("amb", "blu", "brn", "gry", "grn", "hzl", "oth"))
 
 
-def count_valid_passports(passports, validator):
-    return reduce(lambda c, p: c + (1 if validator(p) else 0), passports, 0)
+def count_valid_passports(validator):
+    data = parse_input()
+    return reduce(lambda c, p: c + (1 if validator(p) else 0), data, 0)
 
 
-passports = parse_input()
-print(count_valid_passports(passports, part1_validation))
-print(count_valid_passports(passports, part2_validation))
+print(count_valid_passports(part1_validation))
+print(count_valid_passports(part2_validation))
