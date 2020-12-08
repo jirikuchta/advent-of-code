@@ -25,13 +25,8 @@ def part2():
     def get_altered_data():
         data = get_data()
         if cmd_occurence is not None:
-            found_count = 0
-            for i, item in enumerate(data):
-                if item[0] in ("jmp", "nop"):
-                    if found_count == cmd_occurence:
-                        item[0] = "jmp" if item[0] == "nop" else "nop"
-                        break
-                    found_count += 1
+            cmds = list(filter(lambda i: i[0] in ("jmp", "nop"), data))
+            cmds[cmd_occurence][0] = "jmp" if cmds[cmd_occurence][0] == "nop" else "nop"
         return data
 
     while True:
