@@ -3,8 +3,8 @@
 
 
 def get_data():
-    data = [int(l) for l in open("inputs/day10.txt").readlines()]
-    return sorted([0] + data + [(data[-1] + 3)])
+    data = sorted([int(l) for l in open("inputs/day10.txt").readlines()])
+    return [0] + data + [(data[-1] + 3)]
 
 
 def part1():
@@ -17,7 +17,16 @@ def part1():
 
 
 def part2():
-    pass
+    data = get_data()
+
+    subresults = [1] + [0 for x in range(len(data) - 1)]
+
+    for i, nr in enumerate(data):
+        for y in range(1, 4):
+            if data[i] + y in data:
+                subresults[data.index(nr + y)] += subresults[i]
+
+    return subresults[-1]
 
 
 print(part1())
