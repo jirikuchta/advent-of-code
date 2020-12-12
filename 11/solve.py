@@ -7,7 +7,7 @@ from copy import deepcopy
 
 def count(max_seats_occupied, max_visibility):
     data = [[False if ch == "L" else None for ch in l.strip()]
-            for l in open("inputs/day11.txt").readlines()]
+            for l in open("input.txt").readlines()]
 
     def search_direction(start_row, start_col, move_row, move_col):
         distance = 0

@@ -3,7 +3,7 @@
 
 
 def get_data():
-    data = sorted([int(l) for l in open("inputs/day10.txt").readlines()])
+    data = sorted([int(l) for l in open("input.txt").readlines()])
     return [0] + data + [(data[-1] + 3)]
 
 

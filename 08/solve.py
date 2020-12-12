@@ -6,7 +6,7 @@ from functools import reduce
 
 def get_data():
     return [line.strip().split(" ")
-            for line in open("inputs/day8.txt").readlines()]
+            for line in open("input.txt").readlines()]
 
 
 def part1():

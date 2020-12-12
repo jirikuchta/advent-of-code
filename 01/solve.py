@@ -3,7 +3,7 @@
 
 
 def get_input():
-    return [int(line) for line in open("inputs/day1.txt")]
+    return [int(line) for line in open("input.txt")]
 
 
 def part1(numbers):

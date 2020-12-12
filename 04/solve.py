@@ -8,7 +8,7 @@ from functools import reduce
 def parse_input():
     result = []
 
-    with open("inputs/day4.txt") as file:
+    with open("input.txt") as file:
         data = file.read()
 
     for item in data.replace(" ", "\n").strip().split("\n\n"):

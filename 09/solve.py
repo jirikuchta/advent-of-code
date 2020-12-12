@@ -5,7 +5,7 @@ from itertools import combinations
 
 
 def get_data():
-    return [int(line) for line in open("inputs/day9.txt").readlines()]
+    return [int(line) for line in open("input.txt").readlines()]
 
 
 def part1():

@@ -7,7 +7,7 @@ from functools import reduce
 def count(move_x, move_y):
     x, i, result = 0, 0, 0
     grid = ([char == "#" for char in line.strip()]
-            for line in open("inputs/day3.txt"))
+            for line in open("input.txt"))
 
     for line in grid:
         if i % move_y == 0:

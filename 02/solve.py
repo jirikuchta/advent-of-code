@@ -5,7 +5,7 @@ import re
 
 
 def get_input():
-    return (re.split("-| |: ", line) for line in open("inputs/day2.txt"))
+    return (re.split("-| |: ", line) for line in open("input.txt"))
 
 
 def part1(min, max, letter, password):

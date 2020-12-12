@@ -7,7 +7,7 @@ from functools import reduce
 
 def get_data():
     result = {}
-    for line in open("inputs/day7.txt").readlines():
+    for line in open("input.txt").readlines():
         res = re.findall("(?:^|(\\d+)\\s+)([^\\s]+\\s{1}[^\\s]+)", line)
         result[res[0][1]] = {item[1]: int(item[0]) for item in res[1:]}
     return result

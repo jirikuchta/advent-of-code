@@ -5,7 +5,7 @@ import math
 
 
 def get_input():
-    return ((line[:7], line[7:].strip()) for line in open("inputs/day5.txt"))
+    return ((line[:7], line[7:].strip()) for line in open("input.txt"))
 
 
 def count(input, max):
