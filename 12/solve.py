@@ -11,8 +11,8 @@ def part1():
 
         if cmd in "LR":
             i = "NESW".index(state["dir"])
-            i += (arg / 90) * (-1 if cmd == "L" else 1)
-            state["dir"] = "NESW"[int(i) % 4]
+            i += (arg // 90) * (-1 if cmd == "L" else 1) % 4
+            state["dir"] = "NESW"[i % 4]
 
         if cmd in "NESW":
             axis = "x" if cmd in "EW" else "y"
@@ -34,7 +34,7 @@ def part2():
             ship_pos["y"] = ship_pos["y"] + waypoint_pos["y"] * arg
 
         if cmd in "LR":
-            for i in range(1, int(arg / 90) + 1):
+            for i in range(1, arg // 90 + 1):
                 waypoint_pos = {
                     "x": waypoint_pos["y"] * (-1 if cmd == "L" else 1),
                     "y": waypoint_pos["x"] * (-1 if cmd == "R" else 1)}
