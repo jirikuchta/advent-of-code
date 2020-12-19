@@ -5,40 +5,48 @@ from itertools import product
 from copy import deepcopy
 
 
-def expand_grid(grid):
-    def create_y():
-        return [False] * len(grid[0][0])
+def expand_grid(grid, withW):
+    size_y = len(grid[0][0])
+    size_z = len(grid[0][0][0])
 
-    grid.insert(0, [create_y() for i in range(0, len(grid[0]))])
-    grid.append([create_y() for i in range(0, len(grid[0]))])
+    def y():
+        return [z() for i in range(0, size_y)]
+
+    def z():
+        return [False for i in range(0, size_z)]
+
+    grid.insert(0, [y() for i in range(0, len(grid[0]))])
+    grid.append([y() for i in range(0, len(grid[0]))])
 
     for x in grid:
-        x.insert(0, create_y())
-        x.append(create_y())
+        x.insert(0, y())
+        x.append(y())
 
     for x in grid:
         for y in x:
-            y.insert(0, False)
-            y.append(False)
+            y.insert(0, z())
+            y.append(z())
+
+    if withW:
+        for x in grid:
+            for y in x:
+                for z in y:
+                    z.insert(0, False)
+                    z.append(False)
 
 
-def get_cube_state(x, y, z, grid):
-    active = grid[x][y][z]
+def get_cube_state(x, y, z, w, grid):
+    active = grid[x][y][z][w]
     active_neighbors = -1 if active else 0
 
-    x_i = [x, x+1]
-    if x > 0:
-        x_i.append(x-1)
-    y_i = [y, y+1]
-    if y > 0:
-        y_i.append(y-1)
-    z_i = [z, z+1]
-    if z > 0:
-        z_i.append(z-1)
+    x_i = filter(lambda i: i > -1, [x-1, x, x+1])
+    y_i = filter(lambda i: i > -1, [y-1, y, y+1])
+    z_i = filter(lambda i: i > -1, [z-1, z, z+1])
+    w_i = filter(lambda i: i > -1, [w-1, w, w+1])
 
-    for p in product(x_i, y_i, z_i):
+    for p in product(x_i, y_i, z_i, w_i):
         try:
-            active_neighbors += 1 if grid[p[0]][p[1]][p[2]] else 0
+            active_neighbors += 1 if grid[p[0]][p[1]][p[2]][p[3]] else 0
         except IndexError:
             pass
 
@@ -51,26 +59,30 @@ def get_cube_state(x, y, z, grid):
     return active
 
 
-def count(cycles):
-    grid = [[[ch == "#"] for ch in line.strip()]
+def count(cycles, withW):
+    grid = [[[[ch == "#"]] for ch in line.strip()]
             for line in open("input.txt").readlines()]
 
     for i in range(0, cycles):
-        expand_grid(grid)
+        expand_grid(grid, withW)
 
         grid_copy = deepcopy(grid)
-        size = len(grid)
-        size_z = len(grid[0][0])
+        range_xy = range(0, len(grid))
+        range_z = range(0, len(grid[0][0]))
+        range_w = range(0, len(grid[0][0][0]))
 
-        for p in product(range(0, size), range(0, size), range(0, size_z)):
-            grid[p[0]][p[1]][p[2]] = get_cube_state(*p, grid_copy)
+        for p in product(range_xy, range_xy, range_z, range_w):
+            grid[p[0]][p[1]][p[2]][p[3]] = get_cube_state(*p, grid_copy)
 
-    c = 0
+    result = 0
+
     for x in grid:
         for y in x:
-            c += y.count(True)
+            for z in y:
+                result += z.count(True)
 
-    return c
+    return result
 
 
-print(f"Part 1: {count(6)}")
+print(f"Part 1: {count(6, False)}")
+print(f"Part 2: {count(6, True)}")
