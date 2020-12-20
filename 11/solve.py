@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # https://adventofcode.com/2020/day/11
 
 from functools import reduce

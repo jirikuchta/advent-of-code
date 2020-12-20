@@ -52,13 +52,41 @@ def compute(tokens):
     return result
 
 
+def compute_additions(tokens):
+    new_tokens = []
+    skip_next = False
+
+    for i, token in enumerate(tokens):
+
+        if skip_next:
+            skip_next = False
+            continue
+
+        if token == "+":
+            next_token = tokens[i+1]
+            if type(next_token) is list:
+                next_token = compute(compute_additions(next_token))
+            new_tokens = new_tokens[:-1] + [new_tokens.pop(-1) + next_token]
+            skip_next = True
+            continue
+
+        if type(token) is list:
+            token = compute(compute_additions(token))
+
+        new_tokens.append(token)
+
+    return new_tokens
+
+
 def part1():
-    results = []
+    return sum([compute(tokenize(expr))
+               for expr in open("input.txt").readlines()])
 
-    for expr in open("input.txt").readlines():
-        results.append(compute(tokenize(expr)))
 
-    return sum(results)
+def part2():
+    return sum([compute(compute_additions(tokenize(expr)))
+               for expr in open("input.txt").readlines()])
 
 
 print(f"Part 1: {part1()}")
+print(f"Part 2: {part2()}")
