@@ -53,4 +53,47 @@ def part1():
     return len(list(filter(lambda m: m in rule, messages)))
 
 
+def part2():
+    rules, messages = parse_input()
+    valid_messages = 0
+
+    # message is valid if it begins with at least 2 occurences of rule 42
+    # followed with at least 1 occurence of rule 31
+    rule_0_rules = (
+        {"id": 42, "min_matches": 2},
+        {"id": 31, "min_matches": 1})
+
+    for m in messages:
+        for rule in rule_0_rules:
+            r = resolve_rule(rule["id"], rules)
+            chunk_length = len(r[0])
+            chunk_valid = True
+            matches = 0
+
+            while chunk_valid:
+                chunk = m[:chunk_length]
+                chunk_valid = chunk in r
+
+                if chunk_valid:
+                    matches += 1
+                    m = m[chunk_length:]
+                    continue
+
+                if chunk and matches < rule["min_matches"]:  # invalid message
+                    break
+
+                if not chunk:  # end of message
+                    if rule["id"] == rule_0_rules[-1]["id"]:
+                        if matches >= rule["min_matches"]:
+                            valid_messages += 1
+                    else:
+                        break
+            else:
+                continue
+            break
+
+    return valid_messages
+
+
 print(f"Part 1: {part1()}")
+print(f"Part 2: {part2()}")
