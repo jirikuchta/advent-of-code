@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # https://adventofcode.com/2020/day/20
 
+from functools import reduce
+
 
 def parse_input():
     tiles = []
@@ -19,6 +21,12 @@ class Grid:
 
     def _arrange_tiles(self, tiles):
         return tiles
+
+    def get_corner_tiles(self):
+        return [t for t in self.tiles if len(self.get_adjacent_tiles(t)) == 2]
+
+    def get_adjacent_tiles(self, tile):
+        return list(filter(lambda t: t.id != tile.id and any(map(lambda b: t.has_border(b), tile.get_borders())), self.tiles))
 
 
 class Tile:
@@ -41,10 +49,19 @@ class Tile:
                 data[i].insert(0, col)
         self.data = data
 
+    def get_borders(self):
+        return [self.data[0], [row[-1] for row in self.data],
+                self.data[-1], [row[0] for row in self.data]]
+
+    def has_border(self, border):
+        borders = self.get_borders()
+        reversed_borders = [border[::-1] for border in borders]
+        return border in borders or border in reversed_borders
+
 
 def part1():
     grid = parse_input()
-    return grid.tiles[0].id * grid.tiles[2].id * grid.tiles[6].id * grid.tiles[8].id
+    return reduce(lambda a, b: a * b.id, grid.get_corner_tiles(), 1)
 
 
 print(f"Part 1: {part1()}")
