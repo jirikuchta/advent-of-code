@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # https://adventofcode.com/2020/day/21
 
-from typing import TypedDict, List
+from typing import TypedDict, List, Tuple, Optional
 
 
 class Allergen(TypedDict):
@@ -10,7 +10,7 @@ class Allergen(TypedDict):
 
 class Ingredient(TypedDict):
     name: str
-    allergens: List[Allergen]
+    allergen: Optional[Allergen]
 
 
 class Food(TypedDict):
@@ -18,7 +18,7 @@ class Food(TypedDict):
     listed_allergens: List[Allergen]
 
 
-def parse_input() -> List[Food]:
+def parse_input() -> Tuple[List[Food], List[Ingredient]]:
     ingredients: List[Ingredient] = []
     allergens: List[Allergen] = []
     foods: List[Food] = []
@@ -31,7 +31,7 @@ def parse_input() -> List[Food]:
             try:
                 ingredient = next(filter(lambda i: i["name"] == i_name, ingredients))
             except StopIteration:
-                ingredient = {"name": i_name, "allergens": []}
+                ingredient = {"name": i_name, "allergen": None}
                 ingredients.append(ingredient)
             food["ingredients"].append(ingredient)
 
@@ -49,19 +49,28 @@ def parse_input() -> List[Food]:
         allergen_foods = list(filter(lambda f: allergen in f["listed_allergens"], foods))
         for i in allergen_foods[0]["ingredients"]:
             if all(map(lambda f: i in f["ingredients"], allergen_foods)):
-                i["allergens"].append(allergen)
+                i["allergen"] = allergen
 
-    return foods
+    return foods, ingredients
 
 
 def part1():
-    foods = parse_input()
+    foods, ingredients = parse_input()
     res = 0
     for food in foods:
         for ingredient in food["ingredients"]:
-            if len(ingredient["allergens"]) == 0:
+            if ingredient["allergen"] is None:
                 res += 1
     return res
 
 
+def part2():
+    foods, ingredients = parse_input()
+    ingredients = [i for i in ingredients if i["allergen"]]
+    return ",".join([i["name"]for i in sorted(
+        [i for i in ingredients if i["allergen"]],
+        key=lambda i: i["allergen"]["name"])])
+
+
 print(f"Part 1: {part1()}")
+print(f"Part 2: {part2()}")
