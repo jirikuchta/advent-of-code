@@ -7,26 +7,45 @@ def parse_input():
                  for p in open("input.txt").read().split("\n\n"))
 
 
-def part1():
-    p1, p2 = parse_input()
+def play(decks, recursive=False):
+    turns = []
 
-    while len(p1) and len(p2):
-        p1_card = p1.pop(0)
-        p2_card = p2.pop(0)
+    while all(map(lambda d: len(d) > 0, decks)):
+        if recursive and canonize_decks(decks) in turns:
+            return decks[0], []
 
-        if p1_card > p2_card:
-            p1.append(p1_card)
-            p1.append(p2_card)
+        turns.append(canonize_decks(decks))
+
+        p1_card = decks[0].pop(0)
+        p2_card = decks[1].pop(0)
+        winner = "p1" if p1_card > p2_card else "p2"
+
+        if recursive and len(decks[0]) >= p1_card and len(decks[1]) >= p2_card:
+            res = play([decks[0][:p1_card], decks[1][:p2_card]], True)
+            winner = "p1" if len(res[0]) > 0 else "p2"
+
+        if winner == "p1":
+            decks[0].append(p1_card)
+            decks[0].append(p2_card)
         else:
-            p2.append(p2_card)
-            p2.append(p1_card)
+            decks[1].append(p2_card)
+            decks[1].append(p1_card)
 
-    winners_deck = next(filter(lambda p: len(p) > 0, (p1, p2)))
+    return decks
 
+
+def canonize_decks(decks):
+    return "|".join([",".join(map(lambda i: str(i), deck)) for deck in decks])
+
+
+def get_result(recursive):
+    p1_deck, p2_deck = play(parse_input(), recursive)
+    winners_deck = next(filter(lambda p: len(p) > 0, (p1_deck, p2_deck)))
     res = 0
     for i, card in enumerate(winners_deck):
         res += card * (len(winners_deck) - i)
     return res
 
 
-print(f"Part 1: {part1()}")
+print(f"Part 1: {get_result(False)}")
+print(f"Part 2: {get_result(True)}")
