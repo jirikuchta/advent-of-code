@@ -1,61 +1,69 @@
 #!/usr/bin/env python3
 # https://adventofcode.com/2020/day/21
 
-from typing import TypedDict, List, Tuple, Optional
-
-
-class Allergen(TypedDict):
-    name: str
+from typing import TypedDict, List, Tuple, Set, Optional
 
 
 class Ingredient(TypedDict):
     name: str
-    allergen: Optional[Allergen]
+    allergen: Optional[str]
+    allergen_candidates: Set[str]
 
 
 class Food(TypedDict):
     ingredients: List[Ingredient]
-    listed_allergens: List[Allergen]
+    listed_allergens: Set[str]
 
 
-def parse_input() -> Tuple[List[Food], List[Ingredient]]:
+def parse_input() -> Tuple[List[Ingredient], List[Food]]:
+    allergens: Set[str] = set()
     ingredients: List[Ingredient] = []
-    allergens: List[Allergen] = []
     foods: List[Food] = []
 
-    for l in open("input.txt").readlines():
-        ingredients_str, allergens_str = l.replace("(", "").replace(")", "").replace(",", "").split("contains ")
-        food: Food = {"ingredients": [], "listed_allergens": []}
+    for line in open("input.txt").readlines():
+        line = line.replace("(", "").replace(")", "").replace(",", "")
+        ingredients_str, allergens_str = line.split("contains ")
+        food: Food = {"ingredients": [], "listed_allergens": set()}
 
         for i_name in ingredients_str.strip().split(" "):
+
             try:
-                ingredient = next(filter(lambda i: i["name"] == i_name, ingredients))
+                i = next(filter(lambda i: i["name"] == i_name, ingredients))
             except StopIteration:
-                ingredient = {"name": i_name, "allergen": None}
-                ingredients.append(ingredient)
-            food["ingredients"].append(ingredient)
+                i = {"name": i_name, "allergen": None, "allergen_candidates": set()}
+                ingredients.append(i)
+            food["ingredients"].append(i)
 
         for a_name in allergens_str.strip().split(" "):
-            try:
-                allergen = next(filter(lambda a: a["name"] == a_name, allergens))
-            except StopIteration:
-                allergen = {"name": a_name}
-                allergens.append(allergen)
-            food["listed_allergens"].append(allergen)
+            allergens.add(a_name)
+            food["listed_allergens"].add(a_name)
 
         foods.append(food)
 
-    for allergen in allergens:
-        allergen_foods = list(filter(lambda f: allergen in f["listed_allergens"], foods))
-        for i in allergen_foods[0]["ingredients"]:
-            if all(map(lambda f: i in f["ingredients"], allergen_foods)):
-                i["allergen"] = allergen
+    for a in allergens:
+        a_foods = list(filter(lambda f: a in f["listed_allergens"], foods))
+        for i in a_foods[0]["ingredients"]:
+            if all(map(lambda f: i in f["ingredients"], a_foods)):
+                i["allergen_candidates"].add(a)
 
-    return foods, ingredients
+    while any(map(lambda i: len(i["allergen_candidates"]), ingredients)):
+        allergen = None
+        for i in ingredients:
+            if len(i["allergen_candidates"]) == 1:
+                allergen = list(i["allergen_candidates"])[0]
+                i["allergen"] = allergen
+        if allergen:
+            for i in ingredients:
+                try:
+                    i["allergen_candidates"].remove(allergen)
+                except KeyError:
+                    pass
+
+    return ingredients, foods
 
 
 def part1():
-    foods, ingredients = parse_input()
+    ingredients, foods = parse_input()
     res = 0
     for food in foods:
         for ingredient in food["ingredients"]:
@@ -65,11 +73,11 @@ def part1():
 
 
 def part2():
-    foods, ingredients = parse_input()
+    ingredients, foods = parse_input()
     ingredients = [i for i in ingredients if i["allergen"]]
     return ",".join([i["name"]for i in sorted(
         [i for i in ingredients if i["allergen"]],
-        key=lambda i: i["allergen"]["name"])])
+        key=lambda i: i["allergen"])])
 
 
 print(f"Part 1: {part1()}")
