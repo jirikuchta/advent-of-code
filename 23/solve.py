@@ -1,43 +1,67 @@
 #!/usr/bin/env python3
 # https://adventofcode.com/2020/day/23
 
-from functools import reduce
+
+# Pff, this one was hard to make it finish in reasonable time.
+# Little bit messy but done under 30s.
 
 
 def parse_input():
-    return [int(n) for n in open("input.txt").read() if n.strip()]
+    cups = open("input.txt").read().strip()
+    return {int(cups[i]): int(cups[(i + 1) % len(cups)])
+            for i, _ in enumerate(cups)}, int(cups[0]), int(cups[-1])
 
 
-def play(cups, moves):
-    curr_cup = cups[0]
+def play(cups, cup, moves):
+    max_cup = len(cups.keys())
 
     for i in range(0, moves):
-        picks = [cups.pop((cups.index(curr_cup) + 1) % len(cups)) for p in range(0, 3)]
+        picks = [cups[cup], cups[cups[cup]], cups[cups[cups[cup]]]]
 
-        if any(map(lambda c: c < curr_cup, cups)):
-            dest_cup = max([c for c in cups if c < curr_cup])
-        else:
-            dest_cup = max(cups)
+        try:
+            dest_cup = max(filter(lambda c: c not in picks and c > 0,
+                                  [cup - i for i in range(1, 5)]))
+        except ValueError:
+            dest_cup = max(filter(lambda c: c not in picks and c != cup and c > 0,
+                                  [max_cup - i for i in range(0, 4)]))
 
-        dest_cup_i = cups.index(dest_cup)
-        cups = cups[:dest_cup_i + 1] + picks + cups[dest_cup_i + 1:]
-        curr_cup = cups[(cups.index(curr_cup) + 1) % len(cups)]
+        cups[cup] = cups[picks[2]]
+        cups[picks[2]] = cups[dest_cup]
+        cups[picks[1]] = picks[2]
+        cups[picks[0]] = picks[1]
+        cups[dest_cup] = picks[0]
+
+        cup = cups[cup]
 
     return cups
 
 
 def part1(moves):
-    cups = parse_input()
-    r = play(cups, moves)
-    return reduce(lambda a, b: a + str(b), r[r.index(1) + 1:] + r[:r.index(1)], "")
+    cups, first_cup, last_cup = parse_input()
+    r = play(cups, first_cup, moves)
+
+    result = ""
+    i = 1
+    while True:
+        result += str(r[i])
+        i = r[i]
+        if i == 1:
+            return result
 
 
-# def part2(moves):
-#     cups = parse_input()
-#     cups += cups + list(range(max(cups) + 1, 1000000+1))
-#     r = play(cups, moves)
-#     return r[r.index(1) + 1] * r[r.index(1) + 2]
+def part2(moves):
+    cups, first_cup, last_cup = parse_input()
+    max_cup = max(cups.keys())
+
+    for i in range(max_cup + 1, 1000000):
+        cups[i] = i + 1
+    cups[last_cup] = max_cup + 1
+    cups[1000000] = first_cup
+
+    r = play(cups, first_cup, moves)
+
+    return r[1], r[r[1]], r[1] * r[r[1]]
 
 
 print(f"Part 1: {part1(100)}")
-# print(f"Part 2: {part2(10000000)}")
+print(f"Part 2: {part2(10000000)}")
