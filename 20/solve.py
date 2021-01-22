@@ -151,7 +151,7 @@ def part2(flip=False):
     cre = [
         re.compile(r".{18}#."),
         re.compile(r"#.{4}(?:##.{4}){2}###"),
-        re.compile(r".(?:#.{2}){6}.")]
+        re.compile(r"(?=(.(?:#.{2}){6}.))")]
 
     tiles = arrange_tiles(parse_input())
 
@@ -169,9 +169,8 @@ def part2(flip=False):
         monsters = 0
         for i in range(2, len(grid.data)):
             for match in cre[2].finditer("".join(grid.data[i])):
-                start, end = match.span()
-                if (cre[0].match("".join(grid.data[i - 2])[start:end]) and
-                        cre[1].match("".join(grid.data[i - 1])[start:end])):
+                if (cre[0].match("".join(grid.data[i - 2])[match.start():]) and
+                        cre[1].match("".join(grid.data[i - 1])[match.start():])):
                     monsters += 1
 
         if monsters > 0:
