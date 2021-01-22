@@ -2,6 +2,7 @@
 # https://adventofcode.com/2020/day/20
 
 import math
+import re
 from functools import reduce
 
 
@@ -10,22 +11,33 @@ def parse_input():
     for tile in open("input.txt").read().strip().split("\n\n"):
         rows = tile.split("\n")
         tile_id = rows[:1][0][5:-1]
-        data = [[col == "#" for col in row] for row in rows[1:]]
+        data = [[col for col in row] for row in rows[1:]]
         tiles.append(Tile(tile_id, data))
     return tiles
 
 
-def make_grid(tiles, flip_top_left_tile=False):
+def arrange_tiles(tiles, flip_top_left_tile=False):
     grid_size = int(math.sqrt(len(tiles)))
     res = [[None for j in range(0, grid_size)] for i in range(0, grid_size)]
-    res[0][0] = get_top_left_tile(tiles, flip_top_left_tile)
-    mutual_border = res[0][0].borders["left"]
 
     for row in range(0, grid_size):
-        for col in range(1, grid_size):
-            pass
+        for col in range(0, grid_size):
+            if row == 0 and col == 0:
+                tile = get_top_left_tile(tiles, flip_top_left_tile)
+            else:
+                try:
+                    if col == 0:
+                        tile = get_adjacent_tile(
+                            res[row-1][0].borders["bottom"], "top", tiles)
+                    else:
+                        tile = get_adjacent_tile(
+                            res[row][col-1].borders["right"], "left", tiles)
+                except Exception:
+                    return arrange_tiles(tiles, True)
+            res[row][col] = tile
+            tiles = list(filter(lambda t: t.id != tile.id, tiles))
 
-    return Grid(res)
+    return res
 
 
 def get_top_left_tile(tiles, flip=False):
@@ -34,12 +46,10 @@ def get_top_left_tile(tiles, flip=False):
 
     def correctly_rotated():
         has_right_adjacent_tile = any(map(
-            lambda t: t.has_border(t.borders["right"], "left"),
-            adjacent_tiles))
+            lambda t: t.has_border(tile.borders["right"]), adjacent_tiles))
 
         has_bottom_adjacent_tile = any(map(
-            lambda t: t.has_border(t.borders["bottom"], "top"),
-            adjacent_tiles))
+            lambda t: t.has_border(tile.borders["bottom"]), adjacent_tiles))
 
         return has_right_adjacent_tile and has_bottom_adjacent_tile
 
@@ -52,38 +62,39 @@ def get_top_left_tile(tiles, flip=False):
     return tile
 
 
-def get_adjacent_tiles(tile, tiles, side=None):
+def get_adjacent_tiles(tile, tiles):
     return [t for t in tiles if
-            any(map(lambda b: t.id != tile.id and t.has_border(b, side),
+            any(map(lambda b: t.id != tile.id and t.has_border(b),
                 tile.borders.values()))]
 
 
-class Grid:
-    def __init__(self, tiles):
-        self.tiles = tiles
+def get_adjacent_tile(border, side, tiles, flip=False):
+    tile = next(filter(lambda t: t.has_border(border), tiles))
 
-    @property
-    def corners(self):
-        return (self.tiles[0][0], self.tiles[0][-1],
-                self.tiles[-1][0], self.tiles[-1][-1])
+    if flip:
+        tile.flip_h()
+
+    for i in range(0, 4):
+        if tile.borders[side] == border:
+            break
+        tile.rotate_90_cw()
+    else:
+        return get_adjacent_tile(border, side, tiles, True)
+
+    return tile
 
 
-class Tile:
-    def __init__(self, id, data):
-        self.id = int(id)
+class DataGrid:
+
+    def __init__(self, data):
         self._data = data
 
-    @property
-    def data(self):  # data without borders
-        return [row[1:-1] for row in self._data[1:-1]]
+    def __str__(self):
+        return "\n".join(["".join(row) for row in self._data])
 
     @property
-    def borders(self):
-        return {
-            "top": self._data[0],
-            "right": [row[-1] for row in self._data],
-            "bottom": self._data[-1],
-            "left": [row[0] for row in self._data]}
+    def data(self):
+        return self._data
 
     def flip_h(self):
         self._data.reverse()
@@ -95,9 +106,27 @@ class Tile:
                 data[i].insert(0, col)
         self._data = data
 
-    def has_border(self, border, side=None):
-        borders = [self.borders[side]] if side else self.borders.values()
-        for tile_border in borders:
+
+class Tile(DataGrid):
+
+    def __init__(self, id, data):
+        self.id = int(id)
+        super().__init__(data)
+
+    @property
+    def data(self):  # no borders
+        return [row[1:-1] for row in self._data[1:-1]]
+
+    @property
+    def borders(self):
+        return {
+            "top": self._data[0],
+            "right": [row[-1] for row in self._data],
+            "bottom": self._data[-1],
+            "left": [row[0] for row in self._data]}
+
+    def has_border(self, border):
+        for tile_border in self.borders.values():
             if tile_border == border:
                 return True
 
@@ -108,8 +137,51 @@ class Tile:
 
 
 def part1():
-    grid = make_grid(parse_input())
-    return reduce(lambda a, b: a * b.id, grid.corners, 1)
+    tiles = parse_input()
+    corner_tiles = filter(lambda t: len(get_adjacent_tiles(t, tiles)) == 2, tiles)
+    return reduce(lambda a, b: a * b.id, corner_tiles, 1)
+
+
+def part2(flip=False):
+    """ This is how monsters look like
+                      #
+    #    ##    ##    ###
+     #  #  #  #  #  #
+    """
+    cre = [
+        re.compile(r".{18}#."),
+        re.compile(r"#.{4}(?:##.{4}){2}###"),
+        re.compile(r".(?:#.{2}){6}.")]
+
+    tiles = arrange_tiles(parse_input())
+
+    data = []
+    for tiles_row in tiles:
+        for i in range(0, len(tiles[0][0].data)):
+            data.append(reduce(lambda r, t: r + t.data[i], tiles_row, []))
+
+    grid = DataGrid(data)
+
+    if flip:
+        grid.flip_h()
+
+    for _ in range(0, 4):
+        monsters = 0
+        for i in range(2, len(grid.data)):
+            for match in cre[2].finditer("".join(grid.data[i])):
+                start, end = match.span()
+                if (cre[0].match("".join(grid.data[i - 2])[start:end]) and
+                        cre[1].match("".join(grid.data[i - 1])[start:end])):
+                    monsters += 1
+
+        if monsters > 0:
+            return str(grid).count("#") - monsters * 15
+
+        grid.rotate_90_cw()
+
+    if not flip:
+        return part2(True)
 
 
 print(f"Part 1: {part1()}")
+print(f"Part 2: {part2()}")
