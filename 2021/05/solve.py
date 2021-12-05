@@ -4,11 +4,11 @@
 from collections import Counter
 
 
-def get_data(exclude_diagoval):
+def get_data(exclude_diagonal):
     data = [[[int(n) for n in i.split(",")] for i in ln.split("->")]
             for ln in open("input.txt")]
 
-    if exclude_diagoval:
+    if exclude_diagonal:
         data = list(filter(
             lambda i: i[0][0] == i[1][0] or i[0][1] == i[1][1], data))
 
@@ -18,22 +18,11 @@ def get_data(exclude_diagoval):
 def expand_line(line):
     start_x, end_x = [line[0][0], line[1][0]]
     start_y, end_y = [line[0][1], line[1][1]]
-    step_x = step_y = 1
+    step_x = -1 if start_x > end_x else 1
+    step_y = -1 if start_y > end_y else 1
 
-    if start_x > end_x:
-        step_x = -1
-        end_x -= 1
-    else:
-        end_x += 1
-
-    if start_y > end_y:
-        step_y = -1
-        end_y -= 1
-    else:
-        end_y += 1
-
-    xr = range(start_x, end_x, step_x)
-    yr = range(start_y, end_y, step_y)
+    xr = range(start_x, end_x + step_x, step_x)
+    yr = range(start_y, end_y + step_y, step_y)
 
     return [[
         xr[i] if len(xr) > i else xr[0],
