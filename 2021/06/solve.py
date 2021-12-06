@@ -9,8 +9,7 @@ def count(rounds):
     numbers = [c.get(i) or 0 for i in range(0, 9)]
 
     for i in range(rounds):
-        growth = numbers[0]
-        numbers.pop(0)
+        growth = numbers.pop(0)
         numbers[6] += growth
         numbers.append(growth)
 
