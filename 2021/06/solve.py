@@ -4,14 +4,14 @@
 
 def count(rounds):
     data = [int(n) for n in open("input.txt").read().split(",")]
-    numbers = [data.count(i) for i in range(9)]
+    counts = [data.count(i) for i in range(9)]
 
     for i in range(rounds):
-        growth = numbers.pop(0)
-        numbers[6] += growth
-        numbers.append(growth)
+        growth = counts.pop(0)
+        counts[6] += growth
+        counts.append(growth)
 
-    return sum(numbers)
+    return sum(counts)
 
 
 print(count(80))
