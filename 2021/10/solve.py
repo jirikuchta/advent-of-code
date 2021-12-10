@@ -27,10 +27,8 @@ def get_missing_brackets(line):
         if char != get_closing_bracket(q.pop()):
             raise SyntaxError(char)
 
-    res = ""
-    while q:
-        res += get_closing_bracket(q.pop())
-    return res
+    q.reverse()
+    return "".join([get_closing_bracket(i) for i in q])
 
 
 def part1(data):
