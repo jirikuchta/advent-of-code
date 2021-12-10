@@ -9,26 +9,22 @@ def get_data():
     return [line.strip() for line in open("input.txt")]
 
 
-BRACKETS = "([{<>}])"
-
-
-def get_closing_bracket(opening_bracket):
-    opening_bracket_i = BRACKETS.index(opening_bracket)
-    return BRACKETS[-(opening_bracket_i + 1)]
+OPENING = "([{<"
+CLOSING = ")]}>"
 
 
 def get_missing_brackets(line):
     q = deque()
     for char in line:
-        if char in BRACKETS[:4]:
+        if char in OPENING:
             q.append(char)
             continue
 
-        if char != get_closing_bracket(q.pop()):
+        if char != CLOSING[OPENING.index(q.pop())]:
             raise SyntaxError(char)
 
     q.reverse()
-    return "".join([get_closing_bracket(i) for i in q])
+    return "".join([CLOSING[OPENING.index(i)] for i in q])
 
 
 def part1(data):
