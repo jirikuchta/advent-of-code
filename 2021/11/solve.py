@@ -15,22 +15,6 @@ DIRECTIONS = (complex(0, 1), complex(1, 1), complex(1, 0), complex(1, -1),
               complex(0, -1), complex(-1, -1), complex(-1, 0), complex(-1, 1))
 
 
-def flash(data, key):
-    item = data[key]
-    item["energy"] = 0
-    item["flashed"] = True
-
-    for d in DIRECTIONS:
-        adjacent_item = data.get(key + d)
-        if adjacent_item and not adjacent_item["flashed"]:
-            adjacent_item["energy"] += 1
-
-
-def any_to_flash(data):
-    return any(filter(lambda i: i["energy"] > 9 and not i["flashed"],
-               data.values()))
-
-
 def count(part):
     data = get_data()
 
@@ -44,11 +28,24 @@ def count(part):
             i["energy"] += 1
             i["flashed"] = False
 
-        while any_to_flash(data):
-            for key in data.keys():
-                if data[key]["energy"] > 9 and not data[key]["flashed"]:
-                    flash(data, key)
-                    flashes += 1
+        check = True
+        while check:
+            check = False
+
+            for key, item in data.items():
+                if item["energy"] < 10 or item["flashed"]:
+                    continue
+
+                item["energy"] = 0
+                item["flashed"] = True
+
+                for d in DIRECTIONS:
+                    adjacent_item = data.get(key + d)
+                    if adjacent_item and not adjacent_item["flashed"]:
+                        adjacent_item["energy"] += 1
+
+                flashes += 1
+                check = True
 
         if part == 1 and step == 100:
             return flashes
