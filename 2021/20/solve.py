@@ -5,7 +5,7 @@
 key_data, img_data = open("input.txt").read().split("\n\n")
 
 key = key_data.replace("\n", "")
-img = [[col for col in line] for line in img_data.strip().split("\n")]
+img = [[c for c in r] for r in img_data.strip().split("\n")]
 
 
 def display(grid):
@@ -30,7 +30,7 @@ def pad(img, v):
 
 def enhance(img, steps):
     for i in range(steps):
-        img = pad(img, "#" if i % 2 == 1 else ".")
+        img = pad(img, "#" if i % 2 == 1 and key[0] == "#" else ".")
         enhanced = []
 
         for y in range(1, len(img) - 1):
