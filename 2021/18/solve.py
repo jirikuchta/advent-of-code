@@ -1,73 +1,121 @@
 #!/usr/bin/env python
-# https://adventofcode.com/2021/day/17
+# https://adventofcode.com/2021/day/18
 
-import re
 import json
-from math import floor, ceil
 from functools import reduce
-
-
-def explode(n):
-    pair = None
-    depth = 0
-
-    for i, ch in enumerate(n):
-        if ch == "[":
-            depth += 1
-        if ch == "]":
-            depth -= 1
-        if depth == 5:
-            pair = n[i:i+n[i:].index("]")+1]
-            break
-
-    if not pair:
-        return n
-
-    a, b = json.loads(pair)
-
-    def repl(m):
-        def left(lm):
-            return str(int(lm.groups()[0]) + a) + lm.groups()[1]
-
-        def right(rm):
-            return str(int(rm.groups()[0]) + b)
-
-        return "".join([
-            re.sub("(\\d+)([^\\d])?$", left, m.groups()[0], 1),
-            "0",
-            re.sub("(\\d+)", right, m.groups()[2], 1)
-        ])
-
-    return re.sub(f"(.*)({re.escape(pair)})(.*)", repl, n, 1)
+from itertools import permutations
+from math import floor, ceil
 
 
 def split(n):
-    def repl(m):
-        n = m.groups()[0]
-        return f"[{floor(int(n) / 2)}, {ceil(int(n) / 2)}]"
-    return re.sub("(\\d{2,})", repl, n, 1)
+    if n.children:
+        for i in n.children:
+            if split(i):
+                return True
+
+    v = n.value
+    if isinstance(v, int) and v > 9:
+        n.update([floor(v / 2), ceil(v / 2)])
+        return True
+
+    return False
 
 
-def sum(a, b):
-    n = f"[{a}, {b}]" if a else b
+def explode(n, d=0):
+    ch = n.children
+
+    if not ch:
+        return False
+
+    if any(map(lambda i: isinstance(i.value, list), ch)):
+        for i in ch:
+            if explode(i, d+1):
+                return True
+        return False
+
+    if d < 4:
+        return False
+
+    left_sibling = numeral_sibling(n, "left")
+    right_sibling = numeral_sibling(n, "right")
+
+    if left_sibling:
+        left_sibling.update(left_sibling.value + ch[0].value)
+
+    if right_sibling:
+        right_sibling.update(right_sibling.value + ch[1].value)
+
+    n.update(0)
+
+    return True
+
+
+def sum(n1, n2):
+    n = Number([n1.value, n2.value])
 
     while True:
-        updated = explode(n)
-        changed = updated != n
-        n = updated
-        if not changed:
-            break
+        if explode(n):
+            continue
 
-    while True:
-        updated = split(n)
-        changed = updated != n
-        n = updated
-        if not changed:
+        if not split(n):
             break
-        sum(None, n)
 
     return n
 
 
-print("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]")
-print(reduce(sum, [line.strip() for line in open("input.txt")]))
+def numeral_sibling(n, mode):
+    i_number = 1 if mode == "left" else 0
+    i_sibling = 1 if mode == "left" else 0
+    i_children = 0 if mode == "left" else 1
+
+    p = n.parent
+
+    if p is None:
+        return None
+
+    if n.index == i_number:
+        sibling = p.children[i_children]
+    else:
+        while p.index != i_number:
+            p = p.parent
+            if p is None or p.parent is None:
+                return None
+        sibling = p.parent.children[i_children]
+
+    while sibling.children:
+        sibling = sibling.children[i_sibling]
+
+    return sibling
+
+
+def magnitude(n):
+    if n.children is None:
+        return n.value
+    return 3*magnitude(n.children[0]) + 2*magnitude(n.children[1])
+
+
+class Number:
+
+    def __init__(self, data, index=None, parent=None):
+        self.index = index
+        self.parent = parent
+        self.update(data)
+
+    @property
+    def value(self):
+        if self.children:
+            return [i.value for i in self.children]
+        return self.data
+
+    def update(self, data):
+        self.data = data
+        self.children = None
+
+        if isinstance(data, list):
+            self.children = [Number(v, i, self) for i, v in enumerate(data)]
+
+
+numbers = [Number(json.loads(line)) for line in open("input.txt")]
+
+print(f"Part1: {magnitude(reduce(sum, numbers))}")
+print(f"Part2: {max(magnitude(sum(*pair)) for pair in permutations(numbers, 2))}")
