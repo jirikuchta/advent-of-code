@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 # https://adventofcode.com/2022/day/7
 
-from copy import copy
-
-
 def get_data():
-    dirs = {"/": {"path": []}}
+    dirs = {"/": 0}
     files = {}
     path = []
 
     for line in open("input.txt"):
         parts = line.split()
+        item_path = "/" + "/".join(path[1:] + [parts[1]])
         if parts[0] == "$":
             if parts[1] == "cd":
                 if parts[2] == "..":
@@ -18,18 +16,25 @@ def get_data():
                 else:
                     path.append(parts[2])
         elif parts[0] == "dir":
-            dirs[parts[1]] = {"path": copy(path)}
+            dirs[item_path] = 0
         else:
-            files[parts[1]] = {"size": int(parts[0]), "path": copy(path)}
+            files[item_path] = int(parts[0])
+
+    for d in dirs.keys():
+        dirs[d] = sum([f_size for f, f_size in files.items()
+                       if f.startswith(d)])
 
     return dirs, files
 
 
 def part1(dirs, files):
-    sizes = {}
-    for dir_name in dirs.keys():
-        sizes[dir_name] = sum([f["size"] for f in files.values() if dir_name in f["path"]])
-    return sum(size for size in sizes.values() if size <= 100000)
+    return sum(size for size in dirs.values() if size <= 100000)
+
+
+def part2(dirs, files):
+    return sorted([size for size in dirs.values()
+                   if size >= abs(70000000 - 30000000 - dirs["/"])])[0]
 
 
 print(part1(*get_data()))
+print(part2(*get_data()))
