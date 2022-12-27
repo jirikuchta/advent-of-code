@@ -20,7 +20,7 @@ def get_data():
             }
 
 
-def part1(data):
+def part1():
     count = 0
     for data in get_data():
         if len(data["view"]["top"]) == 0 or \
@@ -39,7 +39,7 @@ def part1(data):
     return count
 
 
-def part2(data):
+def part2():
     score = 0
     for data in get_data():
         data["view"]["top"] = reversed(data["view"]["top"])
@@ -56,5 +56,5 @@ def part2(data):
     return score
 
 
-print(part1(get_data()))
-print(part2(get_data()))
+print(part1())
+print(part2())
