@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # https://adventofcode.com/2022/day/9
 
-from copy import copy
+MOVES = {"R": 1, "L": -1, "U": 1, "D": -1}
 
 
 def get_data():
@@ -11,38 +11,23 @@ def get_data():
     return data
 
 
-def part1(data):
-    head_pos = [[0, 0]]
-    tail_pos = [[0, 0]]
+def move(data, chain_length):
+    ch = [[0, 0] for i in range(chain_length)]
+    visited = set()
 
-    for direction, steps in data:
+    for move, steps in data:
         for _ in range(steps):
-            new_head_pos = copy(head_pos[-1])
-            new_tail_pos = copy(tail_pos[-1])
+            ch[0][0 if move in ("R", "L") else 1] += MOVES[move]
+            for i in range(1, len(ch)):
+                x_dist = ch[i-1][0] - ch[i][0]
+                y_dist = ch[i-1][1] - ch[i][1]
+                if abs(x_dist) > 1 or abs(y_dist) > 1:
+                    ch[i][0] += (ch[i-1][0] > ch[i][0]) - (ch[i-1][0] < ch[i][0])
+                    ch[i][1] += (ch[i-1][1] > ch[i][1]) - (ch[i-1][1] < ch[i][1])
+            visited.add(tuple(ch[-1]))
 
-            if direction == "R":
-                new_head_pos[0] += 1
-            if direction == "L":
-                new_head_pos[0] -= 1
-            if direction == "D":
-                new_head_pos[1] -= 1
-            if direction == "U":
-                new_head_pos[1] += 1
-
-            x_diff = abs(new_head_pos[0] - tail_pos[-1][0])
-            y_diff = abs(new_head_pos[1] - tail_pos[-1][1])
-            if x_diff > 1 or y_diff > 1:
-                new_tail_pos = copy(head_pos[-1])
-
-            head_pos.append(new_head_pos)
-            tail_pos.append(new_tail_pos)
-
-    return len(set([f"{i[0]},{i[1]}" for i in tail_pos]))
+    return len(set(visited))
 
 
-def part2():
-    pass
-
-
-print(part1(get_data()))
-print(part2())
+print(move(get_data(), 2))
+print(move(get_data(), 10))
