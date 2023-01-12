@@ -35,11 +35,13 @@ def part1():
 
 
 def part2():
-    sprite = [0, 2]
     img = "." * 40 * 6
+    sprite_pos = 0
 
     for cycle, x in tick():
-        pass
+        sprite_pos = x + (divmod(cycle, 40)[0] * 40)
+        if cycle in range(sprite_pos, sprite_pos + 3):
+            img = img[:cycle-1] + "#" + img[cycle:]
 
     return "\n".join([img[i:i + 40] for i in range(0, len(img), 40)])
 
