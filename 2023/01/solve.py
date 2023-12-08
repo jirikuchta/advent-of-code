@@ -24,5 +24,5 @@ def part2(data):
     return part1([translate(line) for line in data])
 
 
-# print(part1(get_data()))
+print(part1(get_data()))
 print(part2(get_data()))
